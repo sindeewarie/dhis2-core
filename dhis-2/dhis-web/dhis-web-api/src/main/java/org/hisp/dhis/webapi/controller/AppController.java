@@ -245,7 +245,7 @@ public class AppController
 
                 html = html.replace("</head>", String.format("%s</head>", injectScript));
 
-                StreamUtils.copy(IOUtils.toInputStream(html, StandardCharsets.UTF_8), resource.getInputStream()):
+                StreamUtils.copy( IOUtils.toInputStream( html, StandardCharsets.UTF_8 ), resource.getInputStream() );
             }
 
             StreamUtils.copy( resource.getInputStream(), response.getOutputStream() );
