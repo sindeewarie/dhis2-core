@@ -29,6 +29,7 @@ package org.hisp.dhis.webapi.controller;
  */
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -232,9 +234,9 @@ public class AppController
                 response.setContentType( mimeType );
             }
 
-            response.setContentLength( (int) resource.contentLength() );
             response.setHeader( "Last-Modified", DateUtils.getHttpDateString( new Date( resource.lastModified() ) ) );
 
+	    InputStream pageContent;
             if ( "index.html".equals( pageName ) )
             {
                 String contextPath = ContextUtils.getContextPath( request );
@@ -245,10 +247,16 @@ public class AppController
 
                 html = html.replace("</head>", String.format("%s</head>", injectScript));
 
-                StreamUtils.copy( IOUtils.toInputStream( html, StandardCharsets.UTF_8 ), resource.getInputStream() );
+		pageContent = IOUtils.toInputStream( html, StandardCharsets.UTF_8 );
+            	response.setContentLength( html.length() );
             }
+	    else
+	    {
+                pageContent = resource.getInputStream();
+		response.setContentLength( (int) resource.contentLength() );
+	    }
 
-            StreamUtils.copy( resource.getInputStream(), response.getOutputStream() );
+            StreamUtils.copy( pageContent, response.getOutputStream() );
         }
     }
 
