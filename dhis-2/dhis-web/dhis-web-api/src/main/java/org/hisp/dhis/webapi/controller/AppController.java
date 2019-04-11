@@ -30,6 +30,7 @@ package org.hisp.dhis.webapi.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -233,6 +234,20 @@ public class AppController
 
             response.setContentLength( (int) resource.contentLength() );
             response.setHeader( "Last-Modified", DateUtils.getHttpDateString( new Date( resource.lastModified() ) ) );
+
+            if ( "index.html".equals( pageName ) )
+            {
+                String contextPath = ContextUtils.getContextPath( request );
+
+                String injectScript = String.format("<script>window.dhis2 = { server: { baseUrl: \"%s\" } };</script>", contextPath);
+
+                String html = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+                html = html.replace("</head>", String.format("%s</head>", injectScript));
+
+                StreamUtils.copy(IOUtils.toInputStream(html, StandardCharsets.UTF_8), resource.getInputStream()):
+            }
+
             StreamUtils.copy( resource.getInputStream(), response.getOutputStream() );
         }
     }
