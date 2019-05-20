@@ -41,6 +41,7 @@ import org.hisp.dhis.period.PeriodService;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.quick.BatchHandler;
 import org.hisp.quick.BatchHandlerFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +55,7 @@ import static org.mockito.Mockito.*;
 /**
  * @author Lars Helge Overland
  */
+@Ignore
 public class CompleteDataSetRegistrationBatchHandlerTest
     extends DhisTest
 {
