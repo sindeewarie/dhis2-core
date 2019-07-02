@@ -278,7 +278,6 @@ public class DateUtilsTest
     @Test
     public void testParseIntoDSTGap()
     {
-<<<<<<< HEAD
        Calendar cal = Calendar.getInstance();
 
         int year = 1985;
@@ -299,37 +298,5 @@ public class DateUtilsTest
 
         Date mediumDateParsed = getMediumDate( dateString );
         assertEquals( dateParsed, mediumDateParsed );
-=======
-        DateTimeZone original = DateTimeZone.getDefault();
-        DateTimeZone.setDefault( DateTimeZone.forID( "Asia/Gaza" ) );
-
-        try
-        {
-            Calendar cal = Calendar.getInstance();
-
-            int year = 1985;
-            int month = 4;
-            int day = 14;
-    
-            String dateString = "" + year + "-" + (month < 10 ? "0" : "") + month + "-"  + ( day < 10 ? "0" : "" ) + day;
-    
-            assertTrue( dateTimeIsValid( dateString + "T00:00" ) );
-    
-            Date dateParsed = parseDate( dateString );
-            cal.setTime( dateParsed );
-    
-            assertEquals( year, cal.get( Calendar.YEAR ) );
-            assertEquals( month, cal.get( Calendar.MONTH ) + 1 );
-            assertEquals( day, cal.get( Calendar.DAY_OF_MONTH ) );
-            assertEquals( 0, cal.get( Calendar.HOUR_OF_DAY ) );
-    
-            Date mediumDateParsed = getMediumDate( dateString );
-            assertEquals( dateParsed, mediumDateParsed );
-        }
-        finally
-        {
-            DateTimeZone.setDefault( original );
-        }
->>>>>>> Fix: Avoid parsing dates into daylight savings gap
     }
 }
