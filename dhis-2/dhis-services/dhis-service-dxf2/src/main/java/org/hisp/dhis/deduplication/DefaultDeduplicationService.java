@@ -28,10 +28,12 @@ package org.hisp.dhis.deduplication;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hisp.dhis.dxf2.events.trackedentity.TrackedEntityInstance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
 @Service( "org.hisp.dhis.deduplication.DeduplicationService" )
 public class DefaultDeduplicationService
     implements DeduplicationService
@@ -101,5 +103,21 @@ public class DefaultDeduplicationService
     public List<PotentialDuplicate> getAllPotentialDuplicates( PotentialDuplicateQuery query )
     {
         return potentialDuplicateStore.getAllByQuery( query );
+    }
+
+    @Override
+    public TrackedEntityInstance mergePotentialDuplicate( PotentialDuplicate potentialDuplicate,
+        TrackedEntityInstance tei )
+    {
+
+        // Validate
+
+        // Add
+
+        // Clean up
+
+
+
+        return null;
     }
 }

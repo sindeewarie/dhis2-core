@@ -35,6 +35,7 @@ import org.hisp.dhis.deduplication.DeduplicationService;
 import org.hisp.dhis.deduplication.PotentialDuplicate;
 import org.hisp.dhis.deduplication.PotentialDuplicateQuery;
 import org.hisp.dhis.dxf2.events.TrackerAccessManager;
+import org.hisp.dhis.dxf2.events.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.fieldfilter.FieldFilterParams;
 import org.hisp.dhis.fieldfilter.FieldFilterService;
@@ -42,7 +43,6 @@ import org.hisp.dhis.node.Node;
 import org.hisp.dhis.node.NodeUtils;
 import org.hisp.dhis.node.Preset;
 import org.hisp.dhis.node.types.RootNode;
-import org.hisp.dhis.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.trackedentity.TrackedEntityInstanceService;
 import org.hisp.dhis.user.CurrentUserService;
 import org.hisp.dhis.webapi.mvc.annotation.ApiVersion;
@@ -169,6 +169,24 @@ public class DeduplicationController
         deduplicationService.markPotentialDuplicateInvalid( potentialDuplicate );
     }
 
+    @PostMapping( value = "{id}/merge" )
+    public TrackedEntityInstance mergeDuplicates(
+            @PathVariable String id,
+            @RequestBody TrackedEntityInstance tei
+    ) throws WebMessageException {
+        PotentialDuplicate potentialDuplicate = deduplicationService.getPotentialDuplicateByUid( id );
+
+        if ( potentialDuplicate == null )
+        {
+            throw new WebMessageException(
+                    notFound( "No potentialDuplicate records found with id '" + id + "'." ) );
+        }
+
+        TrackedEntityInstance newTei = deduplicationService.mergePotentialDuplicate( potentialDuplicate, tei );
+
+        return newTei;
+    }
+
 
     private void validatePotentialDuplicate( PotentialDuplicate potentialDuplicate )
         throws WebMessageException
@@ -186,7 +204,7 @@ public class DeduplicationController
                 conflict( "'" + potentialDuplicate.getTeiA() + "' is not valid value for property 'teiA'" ) );
         }
 
-        TrackedEntityInstance teiA = trackedEntityInstanceService
+        org.hisp.dhis.trackedentity.TrackedEntityInstance teiA = trackedEntityInstanceService
             .getTrackedEntityInstance( potentialDuplicate.getTeiA() );
 
         if ( teiA == null )
@@ -210,7 +228,7 @@ public class DeduplicationController
                     conflict( "'" + potentialDuplicate.getTeiB() + "' is not valid value for property 'teiB'" ) );
             }
 
-            TrackedEntityInstance teiB = trackedEntityInstanceService
+            org.hisp.dhis.trackedentity.TrackedEntityInstance teiB = trackedEntityInstanceService
                 .getTrackedEntityInstance( potentialDuplicate.getTeiB() );
 
             if ( teiB == null )

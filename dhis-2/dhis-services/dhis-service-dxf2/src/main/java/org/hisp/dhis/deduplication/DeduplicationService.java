@@ -28,23 +28,29 @@ package org.hisp.dhis.deduplication;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hisp.dhis.dxf2.events.trackedentity.TrackedEntityInstance;
+
 import java.util.List;
 
 public interface DeduplicationService
 {
-        long addPotentialDuplicate( PotentialDuplicate potentialDuplicate );
 
-        PotentialDuplicate getPotentialDuplicateById( long id );
+    long addPotentialDuplicate( PotentialDuplicate potentialDuplicate );
 
-        PotentialDuplicate getPotentialDuplicateByUid( String uid );
+    PotentialDuplicate getPotentialDuplicateById( long id );
 
-        List<PotentialDuplicate> getAllPotentialDuplicates();
+    PotentialDuplicate getPotentialDuplicateByUid( String uid );
 
-        void markPotentialDuplicateInvalid( PotentialDuplicate potentialDuplicate );
+    List<PotentialDuplicate> getAllPotentialDuplicates();
 
-        int countPotentialDuplicates( PotentialDuplicateQuery query );
+    void markPotentialDuplicateInvalid( PotentialDuplicate potentialDuplicate );
 
-        boolean exists( PotentialDuplicate potentialDuplicate );
+    int countPotentialDuplicates( PotentialDuplicateQuery query );
 
-        List<PotentialDuplicate> getAllPotentialDuplicates( PotentialDuplicateQuery query );
+    boolean exists( PotentialDuplicate potentialDuplicate );
+
+    List<PotentialDuplicate> getAllPotentialDuplicates( PotentialDuplicateQuery query );
+
+    TrackedEntityInstance mergePotentialDuplicate( PotentialDuplicate potentialDuplicate, TrackedEntityInstance tei );
+
 }
