@@ -29,12 +29,9 @@
 package org.hisp.dhis.analytics.table;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hisp.dhis.DhisConvenienceTest.createProgram;
-import static org.hisp.dhis.DhisConvenienceTest.createProgramTrackedEntityAttribute;
-import static org.hisp.dhis.DhisConvenienceTest.createTrackedEntityAttribute;
+import static org.hisp.dhis.DhisConvenienceTest.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.hisp.dhis.analytics.AnalyticsTableHookService;
 import org.hisp.dhis.analytics.AnalyticsTableUpdateParams;
@@ -44,6 +41,7 @@ import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.ValueType;
 import org.hisp.dhis.dataapproval.DataApprovalLevelService;
 import org.hisp.dhis.jdbc.StatementBuilder;
+import org.hisp.dhis.jdbc.statementbuilder.PostgreSQLStatementBuilder;
 import org.hisp.dhis.organisationunit.OrganisationUnitService;
 import org.hisp.dhis.program.Program;
 import org.hisp.dhis.program.ProgramTrackedEntityAttribute;
@@ -55,12 +53,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.Lists;
 
@@ -73,48 +69,26 @@ public class JdbcEnrollmentAnalyticsTableManagerTest
     private IdentifiableObjectManager idObjectManager;
 
     @Mock
-    private OrganisationUnitService organisationUnitService;
-
-    @Mock
-    private CategoryService categoryService;
-
-    @Mock
-    private SystemSettingManager systemSettingManager;
-
-    @Mock
-    private DataApprovalLevelService dataApprovalLevelService;
-
-    @Mock
-    private ResourceTableService resourceTableService;
-
-    @Mock
-    private AnalyticsTableHookService tableHookService;
-
-    @Mock
-    private StatementBuilder statementBuilder;
-
-    @Mock
-    private PartitionManager partitionManager;
-
-    @Mock
     private DatabaseInfo databaseInfo;
 
     @Mock
     private JdbcTemplate jdbcTemplate;
 
+    private StatementBuilder statementBuilder;
+
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-    @InjectMocks
     private JdbcEnrollmentAnalyticsTableManager subject;
 
     @Before
     public void setUp()
     {
-        ReflectionTestUtils.setField( subject, "statementBuilder", statementBuilder );
-        when( jdbcTemplate.queryForList(
-            "select distinct(extract(year from psi.executiondate)) from programstageinstance psi inner join programinstance pi on psi.programinstanceid = pi.programinstanceid where pi.programid = 0 and psi.executiondate is not null and psi.deleted is false and psi.executiondate >= '2018-01-01'",
-            Integer.class ) ).thenReturn( Lists.newArrayList( 2018, 2019 ) );
+        this.statementBuilder = new PostgreSQLStatementBuilder();
+        subject = new JdbcEnrollmentAnalyticsTableManager( idObjectManager, mock( OrganisationUnitService.class ),
+            mock( CategoryService.class ), mock( SystemSettingManager.class ), mock( DataApprovalLevelService.class ),
+            mock( ResourceTableService.class ), mock( AnalyticsTableHookService.class ), statementBuilder,
+            mock( PartitionManager.class ), databaseInfo, jdbcTemplate );
     }
 
     @Test
@@ -140,9 +114,9 @@ public class JdbcEnrollmentAnalyticsTableManagerTest
 
         verify( jdbcTemplate ).execute( sql.capture() );
 
-        String ouQuery = "(select ou.name from organisationunit ou where ou.uid = " +
-            "(select value from trackedentityattributevalue where trackedentityinstanceid=pi.trackedentityinstanceid and " +
-            "trackedentityattributeid=9999)) as \"" + tea.getUid() + "\"";
+        String ouQuery = "(select ou.name from organisationunit ou where ou.uid = "
+            + "(select value from trackedentityattributevalue where trackedentityinstanceid=pi.trackedentityinstanceid and "
+            + "trackedentityattributeid=9999)) as \"" + tea.getUid() + "\"";
 
         assertThat( sql.getValue(), containsString( ouQuery ) );
     }
