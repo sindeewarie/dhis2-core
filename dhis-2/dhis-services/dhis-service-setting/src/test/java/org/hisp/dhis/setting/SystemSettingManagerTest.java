@@ -29,14 +29,21 @@ package org.hisp.dhis.setting;
  */
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.hisp.dhis.DhisSpringTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.hisp.dhis.setting.SettingKey.*;
 import static org.junit.Assert.*;
@@ -150,5 +157,67 @@ public class SystemSettingManagerTest
 
         assertEquals( SettingKey.EMAIL_HOST_NAME.isConfidential(), false );
         assertEquals( systemSettingManager.isConfidential( SettingKey.EMAIL_HOST_NAME.getName() ), false);
+    }
+
+    @Test
+    public void testLock2()
+            throws ExecutionException,
+            InterruptedException, IOException {
+
+        long start = System.nanoTime();
+
+//        sessionFactory.getCurrentSession().createNativeQuery(
+//                "INSERT INTO systemsetting (systemsettingid, name, value) VALUES " +
+//                        "(10001, 'keyEmailHostName', '"+ serialize("myValue1") + "')").executeUpdate();
+//        sessionFactory.getCurrentSession().createNativeQuery(
+//                "INSERT INTO systemsetting (systemsettingid, name, value) VALUES " +
+//                        "(10002, 'keyEmailUsername', '"+ serialize("myValue2") + "')").executeUpdate();
+//        sessionFactory.getCurrentSession().createNativeQuery(
+//                "INSERT INTO systemsetting (systemsettingid, name, value) VALUES " +
+//                        "(10003, '" + EMAIL_PASSWORD.getName() + "', '"+ serialize(pbeStringEncryptor.encrypt("myValue3")) + "')").executeUpdate();
+//
+//        jdbcTemplate.execute( "INSERT INTO systemsetting (systemsettingid, name, value) VALUES "
+//                + "(10001, 'keyEmailHostName', '" + serialize( "myValue1" ) + "')" );
+//        jdbcTemplate.execute( "INSERT INTO systemsetting (systemsettingid, name, value) VALUES "
+//                + "(10002, 'keyEmailUsername', '" + serialize( "myValue2" ) + "')" );
+//        jdbcTemplate.execute( "INSERT INTO systemsetting (systemsettingid, name, value) VALUES " + "(10003, '"
+//                + EMAIL_PASSWORD.getName() + "', '" + serialize( pbeStringEncryptor.encrypt( "myValue3" ) ) + "')" );
+//
+        int threads = 10;
+
+        ExecutorService service = Executors.newFixedThreadPool( threads );
+//        ExecutorService service = Executors.newSingleThreadExecutor(  );
+
+        Collection<Future<Map<String, Serializable>>> futures = new ArrayList<>( threads );
+//        // warm hibernate
+//        assertThat( systemSettingManager.getSystemSetting( EMAIL_HOST_NAME ), CoreMatchers.is("myValue1") );
+//        assertThat( systemSettingManager.getSystemSetting( EMAIL_USERNAME ), CoreMatchers.is("myValue2") );
+//        assertThat( systemSettingManager.getSystemSetting( EMAIL_PASSWORD ), CoreMatchers.is("myValue3") );
+
+        for ( int x = 0; x < 100; x++ )
+        {
+            for ( int t = 0; t < threads; ++t )
+            {
+                futures.add( service.submit( () -> systemSettingManager
+                        .getSystemSettings( Lists.newArrayList( EMAIL_HOST_NAME, EMAIL_USERNAME, EMAIL_PASSWORD ) ) ) );
+            }
+            System.out.println( "10K !" );
+        }
+
+        List<Serializable> vals = new ArrayList<>();
+
+        for ( Future<Map<String, Serializable>> f : futures )
+        {
+            vals.add( f.get().get(EMAIL_HOST_NAME) );
+            vals.add( f.get().get(EMAIL_USERNAME) );
+            vals.add( f.get().get(EMAIL_PASSWORD) );
+            //System.out.println(f.get());
+        }
+        System.out.println(vals.size());
+        System.out.println(System.nanoTime() - start);
+        service.shutdown();
+        //assertThat( vals.size(), equalTo( threads * 300000) );
+
+
     }
 }

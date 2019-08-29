@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +57,7 @@ import org.springframework.core.env.Environment;
 import com.google.common.collect.Lists;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.hisp.dhis.setting.SettingKey.*;
 
 /**
  * Declare transactions on individual methods. The get-methods do not have
@@ -122,7 +124,7 @@ public class DefaultSystemSettingManager
     {
         settingCache = cacheProvider.newCacheBuilder( Serializable.class ).forRegion( "systemSetting" )
             .expireAfterWrite( 12, TimeUnit.HOURS )
-            .withMaximumSize( SystemUtils.isTestRun( environment.getActiveProfiles() ) ? 0 : 400 ).build();
+            .withMaximumSize( 400 ).build();
     }
 
     // -------------------------------------------------------------------------
@@ -206,31 +208,55 @@ public class DefaultSystemSettingManager
      */
     private Optional<Serializable> getSystemSettingOptional( String name, Serializable defaultValue )
     {
-        SystemSetting setting = transactionTemplate.execute( status -> systemSettingStore.getByName( name ) );
+//        SystemSetting setting = transactionTemplate.execute( status -> systemSettingStore.getByName( name ) );
+        return Optional.ofNullable(getFromDummyMap(SettingKey.getByName(name).get() ));
+//
+//        if ( setting != null && setting.hasValue() )
+//        {
+//            if ( isConfidential( name ) )
+//            {
+//                try
+//                {
+//                    return Optional.of( pbeStringEncryptor.decrypt( (String) setting.getValue() ) );
+//                }
+//                catch ( EncryptionOperationNotPossibleException e ) // Most likely this means the value is not encrypted, or not existing
+//                {
+//                    log.warn( "Could not decrypt system setting '" + name + "'" );
+//                    return Optional.empty();
+//                }
+//            }
+//            else
+//            {
+//                return Optional.of( setting.getValue() );
+//            }
+//        }
+//        else
+//        {
+//            return Optional.ofNullable( defaultValue );
+//        }
+    }
 
-        if ( setting != null && setting.hasValue() )
+    private Map<SettingKey, String> dummyValues = ImmutableMap.of( EMAIL_HOST_NAME, "alfa", EMAIL_USERNAME, "beta",
+            EMAIL_PASSWORD, "gamma" );
+
+    private SystemSetting getFromDummyMap(SettingKey settingKey) {
+
+        String val =  dummyValues.get(settingKey);
+
+        try
         {
-            if ( isConfidential( name ) )
-            {
-                try
-                {
-                    return Optional.of( pbeStringEncryptor.decrypt( (String) setting.getValue() ) );
-                }
-                catch ( EncryptionOperationNotPossibleException e ) // Most likely this means the value is not encrypted, or not existing
-                {
-                    log.warn( "Could not decrypt system setting '" + name + "'" );
-                    return Optional.empty();
-                }
-            }
-            else
-            {
-                return Optional.of( setting.getValue() );
-            }
+            Thread.sleep( (long) (Math.random() * 1500) );
         }
-        else
+        catch ( InterruptedException e )
         {
-            return Optional.ofNullable( defaultValue );
+            e.printStackTrace();
         }
+        System.out.println("miss");
+        SystemSetting s = new SystemSetting();
+        s.setValue( val );
+        s.setName( settingKey.getName() );
+        return s;
+
     }
 
     @Override
@@ -323,7 +349,7 @@ public class DefaultSystemSettingManager
     @Override
     public String getEmailHostName()
     {
-        return StringUtils.trimToNull( (String) getSystemSetting( SettingKey.EMAIL_HOST_NAME ) );
+        return StringUtils.trimToNull( (String) getSystemSetting( EMAIL_HOST_NAME ) );
     }
 
     @Override
@@ -335,7 +361,7 @@ public class DefaultSystemSettingManager
     @Override
     public String getEmailUsername()
     {
-        return StringUtils.trimToNull( (String) getSystemSetting( SettingKey.EMAIL_USERNAME ) );
+        return StringUtils.trimToNull( (String) getSystemSetting( EMAIL_USERNAME ) );
     }
 
     @Override

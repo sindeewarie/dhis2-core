@@ -62,11 +62,12 @@ public class LocalCache<V> implements Cache<V>
         {
             if ( cacheBuilder.isRefreshExpiryOnAccess() )
             {
-                builder.expireAfterAccess( cacheBuilder.getExpiryInSeconds(), TimeUnit.SECONDS );
+//                builder.expireAfterAccess( cacheBuilder.getExpiryInSeconds(), TimeUnit.SECONDS );
+                builder.expireAfterAccess( 100, TimeUnit.MILLISECONDS );
             }
             else
             {
-                builder.expireAfterWrite( cacheBuilder.getExpiryInSeconds(), TimeUnit.SECONDS );
+                builder.expireAfterWrite( 100, TimeUnit.MILLISECONDS );
             }
         }
         if ( cacheBuilder.getMaximumSize() > 0 )
