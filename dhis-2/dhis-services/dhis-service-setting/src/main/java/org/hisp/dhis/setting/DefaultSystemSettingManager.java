@@ -123,7 +123,7 @@ public class DefaultSystemSettingManager
     public void init()
     {
         settingCache = cacheProvider.newCacheBuilder( Serializable.class ).forRegion( "systemSetting" )
-            .expireAfterWrite( 12, TimeUnit.HOURS )
+            .expireAfterWrite( 100, TimeUnit.MILLISECONDS )
             .withMaximumSize( 400 ).build();
     }
 
@@ -209,7 +209,8 @@ public class DefaultSystemSettingManager
     private Optional<Serializable> getSystemSettingOptional( String name, Serializable defaultValue )
     {
 //        SystemSetting setting = transactionTemplate.execute( status -> systemSettingStore.getByName( name ) );
-        return Optional.ofNullable(getFromDummyMap(SettingKey.getByName(name).get() ));
+        SystemSetting ss = getFromDummyMap( SettingKey.getByName(name).get() );
+        return Optional.of(ss );
 //
 //        if ( setting != null && setting.hasValue() )
 //        {
@@ -242,7 +243,7 @@ public class DefaultSystemSettingManager
     private SystemSetting getFromDummyMap(SettingKey settingKey) {
 
         String val =  dummyValues.get(settingKey);
-
+        assert val != null;
         try
         {
             Thread.sleep( (long) (Math.random() * 1500) );
@@ -311,7 +312,7 @@ public class DefaultSystemSettingManager
         for ( SettingKey setting : keys )
         {
             Serializable value = getSystemSetting( setting );
-
+            assert value != null;
             if ( value != null )
             {
                 map.put( setting.getName(), value );

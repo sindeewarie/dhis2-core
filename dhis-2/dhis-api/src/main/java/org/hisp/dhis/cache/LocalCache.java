@@ -64,14 +64,13 @@ public class LocalCache<V> implements Cache<V>
             builder.eternal( false );
             if ( cacheBuilder.isRefreshExpiryOnAccess() )
             {
-                builder.expireAfterAccess( cacheBuilder.getExpiryInSeconds(), TimeUnit.SECONDS );
                 // TODO https://github.com/cache2k/cache2k/issues/39 is still
                 // Open. Once the issue is resolved it can be updated here
-                builder.expireAfterWrite( cacheBuilder.getExpiryInSeconds(), TimeUnit.SECONDS );
+                builder.expireAfterWrite( 100, TimeUnit.MILLISECONDS );
             }
             else
             {
-                builder.expireAfterWrite( cacheBuilder.getExpiryInSeconds(), TimeUnit.SECONDS );
+                builder.expireAfterWrite( 100, TimeUnit.MILLISECONDS );
             }
         }
         else
@@ -112,12 +111,12 @@ public class LocalCache<V> implements Cache<V>
         if ( value == null )
         {
             value = mappingFunction.apply( key );
+            if ( value != null )
+            {
+                cache2kInstance.put( key, value );
+            }
         }
 
-        if ( value != null )
-        {
-            cache2kInstance.put( key, value );
-        }
         return Optional.ofNullable( Optional.ofNullable( value ).orElse( defaultValue ) );
     }
 
