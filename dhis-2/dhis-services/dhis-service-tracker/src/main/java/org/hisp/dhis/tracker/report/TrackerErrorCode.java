@@ -40,7 +40,7 @@ public enum TrackerErrorCode
     E1001( "User: `{0}`, has no data write access to tracked entity type: `{1}`." ),
     E1002( "Tracked entity instance: `{0}`, already exists or was deleted earlier." ),
     E1003( "Enrollment: `{0}`, create access error." ),
-    E1004( "Missing required property: 'trackedEntityType'." ),
+    E1004( "Missing required property: '`{0}`'." ),
     E1005( "Could not find trackedEntityType: `{0}`." ),
     E1006( "Attribute: `{0}`, does not exist." ),
     E1007( "Error validating attribute value type; Error `{0}`." ),
@@ -136,6 +136,12 @@ public enum TrackerErrorCode
     E1087( "Program: `{0}`, and program stage: `{0}` have different org units." ),
     E1088( "Event: `{0}`, program: `{1}`, and program stage: `{2}` could not be found." ),
     E1089( "Event: `{0}`, program stage program and event program don't match." ),
+
+    E4000( "Relationship: `{0}` cannot link itself" ),
+    E4001( "Property `{0}` can not be set when property `{1}` is `{2}`. " ),
+    E4002( "Property `{0}` must be set when property `{1}` is `{2}`. " ),
+    E4003( "There are duplicated relationships. " ),
+    E4004( "There are duplicated bidirectional relationships. " ),
 
     E9999( "N/A" );
 

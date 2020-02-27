@@ -54,12 +54,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Every.everyItem;
+import static org.hisp.dhis.tracker.report.ValidationErrorReporter.newReport;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -294,7 +296,8 @@ public class TrackedEntityImportValidationTest
         TrackerValidationReport report = trackerValidationService.validate( trackerBundle );
         assertEquals( 1, report.getErrorReports().size() );
         assertThat( report.getErrorReports(),
-            hasItem( hasProperty( "errorCode", equalTo( TrackerErrorCode.E1004 ) ) ) );
+            hasItem( hasProperty( "errorCode",
+                equalTo( MessageFormat.format( TrackerErrorCode.E1004.getMessage(), "trackedEntityType" ) ) ) ) );
 
         printErrors( report );
     }
