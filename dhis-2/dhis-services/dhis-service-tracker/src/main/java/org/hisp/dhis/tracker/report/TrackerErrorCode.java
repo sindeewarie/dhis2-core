@@ -40,7 +40,7 @@ public enum TrackerErrorCode
     E1001( "User: `{0}`, has no data write access to tracked entity type: `{1}`." ),
     E1002( "Tracked entity instance: `{0}`, already exists or was deleted earlier." ),
     E1003( "Enrollment: `{0}`, create access error." ),
-    E1004( "Missing required property: '`{0}`'." ),
+    E1004( "Missing required property: 'trackedEntityType'." ),
     E1005( "Could not find trackedEntityType: `{0}`." ),
     E1006( "Attribute: `{0}`, does not exist." ),
     E1007( "Error validating attribute value type; Error `{0}`." ),
@@ -141,7 +141,7 @@ public enum TrackerErrorCode
     E4001( "Property `{0}` can not be set when property `{1}` is `{2}`. " ),
     E4002( "Property `{0}` must be set when property `{1}` is `{2}`. " ),
     E4003( "There are duplicated relationships. " ),
-    E4004( "There are duplicated bidirectional relationships. " ),
+    E4004( "Missing required property: 'relationshipType'." ),
 
     E9999( "N/A" );
 

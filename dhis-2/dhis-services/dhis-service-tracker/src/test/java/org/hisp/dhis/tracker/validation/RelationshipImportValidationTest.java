@@ -111,7 +111,7 @@ public class RelationshipImportValidationTest
         List<TrackerErrorReport> errorReports = validatorToTest.validate( trackerBundle );
 
         assertEquals( 1, errorReports.size() );
-        assertThat( errorReports.get( 0 ).getErrorCode(), is( TrackerErrorCode.E1004 ) );
+        assertThat( errorReports.get( 0 ).getErrorCode(), is( TrackerErrorCode.E4004 ) );
     }
 
     @Test
@@ -122,7 +122,7 @@ public class RelationshipImportValidationTest
         List<TrackerErrorReport> errorReports = validatorToTest.validate( trackerBundle );
 
         assertEquals( 1, errorReports.size() );
-        assertThat( errorReports.get( 0 ).getErrorCode(), is( TrackerErrorCode.E1004 ) );
+        assertThat( errorReports.get( 0 ).getErrorCode(), is( TrackerErrorCode.E4004 ) );
     }
 
     @Test
@@ -133,7 +133,7 @@ public class RelationshipImportValidationTest
         List<TrackerErrorReport> errorReports = validatorToTest.validate( trackerBundle );
 
         assertEquals( 1, errorReports.size() );
-        assertThat( errorReports.get( 0 ).getErrorCode(), is( TrackerErrorCode.E1004 ) );
+        assertThat( errorReports.get( 0 ).getErrorCode(), is( TrackerErrorCode.E4004 ) );
     }
 
     @Test

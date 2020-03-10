@@ -134,13 +134,13 @@ public class RelationshipsValidationHook
 
         if ( !optionalRelationshipType.isPresent() )
         {
-            reporter.addError( newReport( TrackerErrorCode.E1004 ).addArg( "relationshipType" ) );
+            reporter.addError( newReport( TrackerErrorCode.E4004 ).addArg( "relationshipType" ) );
             return;
         }
 
         if ( relationship.getFrom() == null )
         {
-            reporter.addError( newReport( TrackerErrorCode.E1004 ).addArg( "relationship.getFrom" ) );
+            reporter.addError( newReport( TrackerErrorCode.E4004 ).addArg( "relationship.getFrom" ) );
         }
         else
         {
@@ -155,7 +155,7 @@ public class RelationshipsValidationHook
 
         if ( relationship.getTo() == null )
         {
-            reporter.addError( newReport( TrackerErrorCode.E1004 ).addArg( "relationship.getTo" ) );
+            reporter.addError( newReport( TrackerErrorCode.E4004 ).addArg( "relationship.getTo" ) );
         }
         else
         {
