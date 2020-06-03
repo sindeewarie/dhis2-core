@@ -54,6 +54,8 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hisp.dhis.analytics.AnalyticsAggregationType;
 import org.hisp.dhis.analytics.AnalyticsManager;
@@ -125,8 +127,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * @author Lars Helge Overland
  */
@@ -136,6 +136,7 @@ public class DefaultAnalyticsService
     implements AnalyticsService
 {
     private static final int PERCENT = 100;
+
     private static final int MAX_QUERIES = 8;
 
     private final AnalyticsManager analyticsManager;
@@ -188,7 +189,7 @@ public class DefaultAnalyticsService
         checkNotNull( eventAnalyticsService );
         checkNotNull( dataQueryService );
         checkNotNull( resolver );
-        checkNotNull(analyticsCache);
+        checkNotNull( analyticsCache );
 
         this.analyticsManager = analyticsManager;
         this.rawAnalyticsManager = rawAnalyticsManager;
@@ -219,11 +220,14 @@ public class DefaultAnalyticsService
 
         queryValidator.validate( params );
 
-//        if ( analyticsCache.isEnabled() )
-//        {
-//            final DataQueryParams immutableParams = DataQueryParams.newBuilder( params ).build();
-//            return analyticsCache.getOrFetch( params, p -> getAggregatedDataValueGridInternal( immutableParams ) );
-//        }
+        // TODO luciano: uncomment this block
+        // if ( analyticsCache.isEnabled() )
+        // {
+        // final DataQueryParams immutableParams = DataQueryParams.newBuilder( params
+        // ).build();
+        // return analyticsCache.getOrFetch( params, p ->
+        // getAggregatedDataValueGridInternal( immutableParams ) );
+        // }
 
         return getAggregatedDataValueGridInternal( params );
     }
@@ -231,9 +235,9 @@ public class DefaultAnalyticsService
     @Override
     public Grid getAggregatedDataValues( DataQueryParams params, List<String> columns, List<String> rows )
     {
-        return AnalyticsUtils.isTableLayout( columns, rows ) ?
-            getAggregatedDataValuesTableLayout( params, columns, rows ) :
-            getAggregatedDataValues( params );
+        return AnalyticsUtils.isTableLayout( columns, rows )
+            ? getAggregatedDataValuesTableLayout( params, columns, rows )
+            : getAggregatedDataValues( params );
     }
 
     @Override
@@ -352,9 +356,9 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Performs pre-handling of the given query and returns the immutable,
-     * handled query. If the query has a single indicator as item for the data
-     * filter, the filter is set as a dimension and removed as a filter.
+     * Performs pre-handling of the given query and returns the immutable, handled
+     * query. If the query has a single indicator as item for the data filter, the
+     * filter is set as a dimension and removed as a filter.
      *
      * @param params the {@link DataQueryParams}.
      * @return a {@link DataQueryParams}.
@@ -408,32 +412,42 @@ public class DefaultAnalyticsService
         {
             for ( DimensionalObject col : params.getDimensions() )
             {
-                grid.addHeader( new GridHeader( col.getDimension(), col.getDisplayName(), ValueType.TEXT, String.class.getName(), false, true ) );
+                grid.addHeader( new GridHeader( col.getDimension(), col.getDisplayName(), ValueType.TEXT,
+                    String.class.getName(), false, true ) );
             }
 
             if ( params.isShowHierarchy() && !params.getOrgUnitLevels().isEmpty() )
             {
                 for ( DimensionalObject level : params.getOrgUnitLevelsAsDimensions() )
                 {
-                    grid.addHeader( new GridHeader( level.getDimension(), level.getDisplayName(), ValueType.TEXT, String.class.getName(), false, true ) );
+                    grid.addHeader( new GridHeader( level.getDimension(), level.getDisplayName(), ValueType.TEXT,
+                        String.class.getName(), false, true ) );
                 }
             }
 
             if ( params.isIncludePeriodStartEndDates() )
             {
-                grid.addHeader( new GridHeader( PERIOD_START_DATE_ID, PERIOD_START_DATE_NAME, ValueType.DATETIME, Date.class.getName(), false, false ) );
-                grid.addHeader( new GridHeader( PERIOD_END_DATE_ID, PERIOD_END_DATE_NAME, ValueType.DATETIME, Date.class.getName(), false, false ) );
+                grid.addHeader( new GridHeader( PERIOD_START_DATE_ID, PERIOD_START_DATE_NAME, ValueType.DATETIME,
+                    Date.class.getName(), false, false ) );
+                grid.addHeader( new GridHeader( PERIOD_END_DATE_ID, PERIOD_END_DATE_NAME, ValueType.DATETIME,
+                    Date.class.getName(), false, false ) );
             }
 
-            grid.addHeader( new GridHeader( VALUE_ID, VALUE_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) );
+            grid.addHeader(
+                new GridHeader( VALUE_ID, VALUE_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) );
 
             if ( params.isIncludeNumDen() )
             {
-                grid.addHeader( new GridHeader( NUMERATOR_ID, NUMERATOR_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) )
-                    .addHeader( new GridHeader( DENOMINATOR_ID, DENOMINATOR_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) )
-                    .addHeader( new GridHeader( FACTOR_ID, FACTOR_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) )
-                    .addHeader( new GridHeader( MULTIPLIER_ID, MULTIPLIER_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) )
-                    .addHeader( new GridHeader( DIVISOR_ID, DIVISOR_HEADER_NAME, ValueType.NUMBER, Double.class.getName(), false, false ) );
+                grid.addHeader( new GridHeader( NUMERATOR_ID, NUMERATOR_HEADER_NAME, ValueType.NUMBER,
+                    Double.class.getName(), false, false ) )
+                    .addHeader( new GridHeader( DENOMINATOR_ID, DENOMINATOR_HEADER_NAME, ValueType.NUMBER,
+                        Double.class.getName(), false, false ) )
+                    .addHeader( new GridHeader( FACTOR_ID, FACTOR_HEADER_NAME, ValueType.NUMBER, Double.class.getName(),
+                        false, false ) )
+                    .addHeader( new GridHeader( MULTIPLIER_ID, MULTIPLIER_HEADER_NAME, ValueType.NUMBER,
+                        Double.class.getName(), false, false ) )
+                    .addHeader( new GridHeader( DIVISOR_ID, DIVISOR_HEADER_NAME, ValueType.NUMBER,
+                        Double.class.getName(), false, false ) );
             }
         }
     }
@@ -463,11 +477,13 @@ public class DefaultAnalyticsService
             // Get indicator values
             // -----------------------------------------------------------------
 
-            Map<String, Map<String, Integer>> permutationOrgUnitTargetMap = getOrgUnitTargetMap( dataSourceParams, indicators );
+            Map<String, Map<String, Integer>> permutationOrgUnitTargetMap = getOrgUnitTargetMap( dataSourceParams,
+                indicators );
 
             List<List<DimensionItem>> dimensionItemPermutations = dataSourceParams.getDimensionItemPermutations();
 
-            Map<String, Map<DimensionalItemObject, Double>> permutationDimensionItemValueMap = getPermutationDimensionItemValueMap( dataSourceParams );
+            Map<String, Map<DimensionalItemObject, Double>> permutationDimensionItemValueMap = getPermutationDimensionItemValueMap(
+                dataSourceParams );
 
             handleEmptyDimensionItemPermutations( dimensionItemPermutations );
 
@@ -487,9 +503,12 @@ public class DefaultAnalyticsService
 
                     String ou = unit != null ? unit.getUid() : null;
 
-                    Map<String, Integer> orgUnitCountMap = permutationOrgUnitTargetMap != null ? permutationOrgUnitTargetMap.get( ou ) : null;
+                    Map<String, Integer> orgUnitCountMap = permutationOrgUnitTargetMap != null
+                        ? permutationOrgUnitTargetMap.get( ou )
+                        : null;
 
-                    IndicatorValue value = expressionService.getIndicatorValueObject( indicator, periods, valueMap, constantMap, orgUnitCountMap );
+                    IndicatorValue value = expressionService.getIndicatorValueObject( indicator, periods, valueMap,
+                        constantMap, orgUnitCountMap );
 
                     if ( value != null && satisfiesMeasureCriteria( params, value, indicator ) )
                     {
@@ -499,13 +518,17 @@ public class DefaultAnalyticsService
 
                         grid.addRow()
                             .addValues( DimensionItem.getItemIdentifiers( row ) )
-                            .addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(), value.getValue() ) );
+                            .addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(),
+                                value.getValue() ) );
 
                         if ( params.isIncludeNumDen() )
                         {
-                            grid.addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(), value.getNumeratorValue() ) )
-                                .addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(), value.getDenominatorValue() ) )
-                                .addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(), value.getFactor() ) )
+                            grid.addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(),
+                                value.getNumeratorValue() ) )
+                                .addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(),
+                                    value.getDenominatorValue() ) )
+                                .addValue( AnalyticsUtils.getRoundedValue( dataSourceParams, indicator.getDecimals(),
+                                    value.getFactor() ) )
                                 .addValue( value.getMultiplier() )
                                 .addValue( value.getDivisor() );
                         }
@@ -516,12 +539,14 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Checks whether the measure criteria in query parameters is satisfied for the given indicator value.
+     * Checks whether the measure criteria in query parameters is satisfied for the
+     * given indicator value.
      *
      * @param params the query parameters.
      * @param value the indicator value.
      * @param indicator the indicator.
-     * @return true if all the measure criteria are satisfied for this indicator value, false otherwise.
+     * @return true if all the measure criteria are satisfied for this indicator
+     *         value, false otherwise.
      */
     private boolean satisfiesMeasureCriteria( DataQueryParams params, IndicatorValue value, Indicator indicator )
     {
@@ -530,7 +555,8 @@ public class DefaultAnalyticsService
             return true;
         }
 
-        Double indicatorRoundedValue = AnalyticsUtils.getRoundedValue( params, indicator.getDecimals(), value.getValue() ).doubleValue();
+        Double indicatorRoundedValue = AnalyticsUtils
+            .getRoundedValue( params, indicator.getDecimals(), value.getValue() ).doubleValue();
 
         return !params.getMeasureCriteria().entrySet().stream()
             .anyMatch( measureValue -> !measureValue.getKey()
@@ -544,7 +570,7 @@ public class DefaultAnalyticsService
      * @param params the {@link DataQueryParams}.
      * @param grid the grid.
      */
-    private void  addDataElementValues( DataQueryParams params, Grid grid )
+    private void addDataElementValues( DataQueryParams params, Grid grid )
     {
         if ( !params.getAllDataElements().isEmpty() && !params.isSkipData() )
         {
@@ -598,22 +624,25 @@ public class DefaultAnalyticsService
      * @param grid the grid.
      * @param totalType the operand {@link DataElementOperand.TotalType}.
      */
-    private void  addDataElementOperandValues( DataQueryParams params, Grid grid, DataElementOperand.TotalType totalType )
+    private void addDataElementOperandValues( DataQueryParams params, Grid grid,
+        DataElementOperand.TotalType totalType )
     {
         List<DataElementOperand> operands = asTypedList( params.getDataElementOperands() );
         operands = operands.stream().filter( o -> totalType.equals( o.getTotalType() ) ).collect( Collectors.toList() );
-
 
         if ( operands.isEmpty() )
         {
             return;
         }
 
-        List<DimensionalItemObject> dataElements = Lists.newArrayList( DimensionalObjectUtils.getDataElements( operands ) );
-        List<DimensionalItemObject> categoryOptionCombos = Lists.newArrayList( DimensionalObjectUtils.getCategoryOptionCombos( operands ) );
-        List<DimensionalItemObject> attributeOptionCombos = Lists.newArrayList( DimensionalObjectUtils.getAttributeOptionCombos( operands ) );
+        List<DimensionalItemObject> dataElements = Lists
+            .newArrayList( DimensionalObjectUtils.getDataElements( operands ) );
+        List<DimensionalItemObject> categoryOptionCombos = Lists
+            .newArrayList( DimensionalObjectUtils.getCategoryOptionCombos( operands ) );
+        List<DimensionalItemObject> attributeOptionCombos = Lists
+            .newArrayList( DimensionalObjectUtils.getAttributeOptionCombos( operands ) );
 
-        //TODO Check if data was dim or filter
+        // TODO Check if data was dim or filter
 
         DataQueryParams.Builder builder = DataQueryParams.newBuilder( params )
             .removeDimension( DATA_X_DIM_ID )
@@ -621,12 +650,14 @@ public class DefaultAnalyticsService
 
         if ( totalType.isCategoryOptionCombo() )
         {
-            builder.addDimension( new BaseDimensionalObject( CATEGORYOPTIONCOMBO_DIM_ID, DimensionType.CATEGORY_OPTION_COMBO, categoryOptionCombos ) );
+            builder.addDimension( new BaseDimensionalObject( CATEGORYOPTIONCOMBO_DIM_ID,
+                DimensionType.CATEGORY_OPTION_COMBO, categoryOptionCombos ) );
         }
 
         if ( totalType.isAttributeOptionCombo() )
         {
-            builder.addDimension( new BaseDimensionalObject( ATTRIBUTEOPTIONCOMBO_DIM_ID, DimensionType.ATTRIBUTE_OPTION_COMBO, attributeOptionCombos ) );
+            builder.addDimension( new BaseDimensionalObject( ATTRIBUTEOPTIONCOMBO_DIM_ID,
+                DimensionType.ATTRIBUTE_OPTION_COMBO, attributeOptionCombos ) );
         }
 
         DataQueryParams operandParams = builder.build();
@@ -667,7 +698,7 @@ public class DefaultAnalyticsService
                     .retainDataDimensionReportingRates( metric )
                     .ignoreDataApproval() // No approval for reporting rates
                     .withAggregationType( AnalyticsAggregationType.COUNT )
-                    .withTimely( ( REPORTING_RATE_ON_TIME == metric || ACTUAL_REPORTS_ON_TIME == metric ) ).build();
+                    .withTimely( (REPORTING_RATE_ON_TIME == metric || ACTUAL_REPORTS_ON_TIME == metric) ).build();
 
                 addReportingRates( dataSourceParams, grid, metric );
             }
@@ -700,7 +731,8 @@ public class DefaultAnalyticsService
 
             Map<String, Double> targetMap = getAggregatedCompletenessTargetMap( targetParams );
 
-            Map<String, Double> dataMap = metric != EXPECTED_REPORTS ? getAggregatedCompletenessValueMap( params ) : new HashMap<>();
+            Map<String, Double> dataMap = metric != EXPECTED_REPORTS ? getAggregatedCompletenessValueMap( params )
+                : new HashMap<>();
 
             Integer periodIndex = params.getPeriodDimensionIndex();
             Integer dataSetIndex = DataQueryParams.DX_INDEX;
@@ -722,7 +754,8 @@ public class DefaultAnalyticsService
                     // Multiply target value by number of periods in time span
                     // ---------------------------------------------------------
 
-                    PeriodType queryPt = filterPeriodType != null ? filterPeriodType : getPeriodTypeFromIsoString( dataRow.get( periodIndex ) );
+                    PeriodType queryPt = filterPeriodType != null ? filterPeriodType
+                        : getPeriodTypeFromIsoString( dataRow.get( periodIndex ) );
                     PeriodType dataSetPt = dsPtMap.get( dataRow.get( dataSetIndex ) );
 
                     // Use number of days for daily data sets as target, as query
@@ -752,9 +785,9 @@ public class DefaultAnalyticsService
                     {
                         value = actual;
                     }
-                    else if ( !MathUtils.isZero( target) ) // REPORTING_RATE or REPORTING_RATE_ON_TIME
+                    else if ( !MathUtils.isZero( target ) ) // REPORTING_RATE or REPORTING_RATE_ON_TIME
                     {
-                        value = Math.min( ( ( actual * PERCENT ) / target ), 100d );
+                        value = Math.min( ((actual * PERCENT) / target), 100d );
                     }
 
                     String reportingRate = DimensionalObjectUtils.getDimensionItem( dataRow.get( DX_INDEX ), metric );
@@ -785,13 +818,15 @@ public class DefaultAnalyticsService
      */
     private void addProgramDataElementAttributeIndicatorValues( DataQueryParams params, Grid grid )
     {
-        if ( ( !params.getAllProgramDataElementsAndAttributes().isEmpty() || !params.getProgramIndicators().isEmpty() ) && !params.isSkipData() )
+        if ( (!params.getAllProgramDataElementsAndAttributes().isEmpty() || !params.getProgramIndicators().isEmpty())
+            && !params.isSkipData() )
         {
             DataQueryParams dataSourceParams = DataQueryParams.newBuilder( params )
                 .retainDataDimensions( PROGRAM_DATA_ELEMENT, PROGRAM_ATTRIBUTE, PROGRAM_INDICATOR ).build();
 
-            EventQueryParams eventQueryParams = new EventQueryParams.Builder( EventQueryParams.fromDataQueryParams( dataSourceParams ) )
-                .withSkipMeta( true ).build();
+            EventQueryParams eventQueryParams = new EventQueryParams.Builder(
+                EventQueryParams.fromDataQueryParams( dataSourceParams ) )
+                    .withSkipMeta( true ).build();
 
             Grid eventGrid = eventAnalyticsService.getAggregatedEventData( eventQueryParams );
 
@@ -800,9 +835,9 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Adds values to the given grid based on dynamic dimensions from the given
-     * data query parameters. This assumes that no fixed dimensions are part of
-     * the query.
+     * Adds values to the given grid based on dynamic dimensions from the given data
+     * query parameters. This assumes that no fixed dimensions are part of the
+     * query.
      *
      * @param params the {@link DataQueryParams}.
      * @param grid the grid.
@@ -814,7 +849,7 @@ public class DefaultAnalyticsService
             Map<String, Double> aggregatedDataMap = getAggregatedDataValueMap( DataQueryParams.newBuilder( params )
                 .withIncludeNumDen( false ).build() );
 
-            fillGridWithAggregatedDataMap(params, grid, aggregatedDataMap);
+            fillGridWithAggregatedDataMap( params, grid, aggregatedDataMap );
         }
     }
 
@@ -836,7 +871,7 @@ public class DefaultAnalyticsService
 
             Map<String, Double> aggregatedDataMap = getAggregatedValidationResultMapObjectTyped( dataSourceParams );
 
-            fillGridWithAggregatedDataMap(params, grid, aggregatedDataMap);
+            fillGridWithAggregatedDataMap( params, grid, aggregatedDataMap );
         }
     }
 
@@ -870,9 +905,9 @@ public class DefaultAnalyticsService
 
             Calendar calendar = PeriodType.getCalendar();
 
-            List<String> periodUids = calendar.isIso8601() ?
-                getUids( params.getDimensionOrFilterItems( PERIOD_DIM_ID ) ) :
-                getLocalPeriodIdentifiers( params.getDimensionOrFilterItems( PERIOD_DIM_ID ), calendar );
+            List<String> periodUids = calendar.isIso8601()
+                ? getUids( params.getDimensionOrFilterItems( PERIOD_DIM_ID ) )
+                : getLocalPeriodIdentifiers( params.getDimensionOrFilterItems( PERIOD_DIM_ID ), calendar );
 
             dimensionItems.put( PERIOD_DIM_ID, periodUids );
             dimensionItems.put( CATEGORYOPTIONCOMBO_DIM_ID, Sets.newHashSet( cocNameMap.keySet() ) );
@@ -891,13 +926,15 @@ public class DefaultAnalyticsService
             // Organisation unit hierarchy
             // -----------------------------------------------------------------
 
-            List<OrganisationUnit> organisationUnits = asTypedList( params.getDimensionOrFilterItems( ORGUNIT_DIM_ID ) );
+            List<OrganisationUnit> organisationUnits = asTypedList(
+                params.getDimensionOrFilterItems( ORGUNIT_DIM_ID ) );
 
             Collection<OrganisationUnit> roots = dataQueryService.getUserOrgUnits( params, null );
 
             if ( params.isHierarchyMeta() )
             {
-                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_HIERARCHY.getKey(), getParentGraphMap( organisationUnits, roots ) );
+                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_HIERARCHY.getKey(),
+                    getParentGraphMap( organisationUnits, roots ) );
             }
 
             if ( params.isShowHierarchy() )
@@ -906,7 +943,8 @@ public class DefaultAnalyticsService
                     .collect( Collectors.toMap( OrganisationUnit::getUid, ou -> ou.getAncestorNames( roots, true ) ) );
 
                 internalMetaData.put( AnalyticsMetaDataKey.ORG_UNIT_ANCESTORS.getKey(), ancestorMap );
-                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_NAME_HIERARCHY.getKey(), getParentNameGraphMap( organisationUnits, roots, true ) );
+                metaData.put( AnalyticsMetaDataKey.ORG_UNIT_NAME_HIERARCHY.getKey(),
+                    getParentNameGraphMap( organisationUnits, roots, true ) );
             }
 
             grid.setMetaData( ImmutableMap.copyOf( metaData ) );
@@ -915,8 +953,8 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Prepares the given grid to be converted to a data value set, given
-     * that the output format is of type DATA_VALUE_SET.
+     * Prepares the given grid to be converted to a data value set, given that the
+     * output format is of type DATA_VALUE_SET.
      *
      * @param params the {@link DataQueryParams}.
      * @param grid the grid.
@@ -940,11 +978,13 @@ public class DefaultAnalyticsService
     {
         if ( !params.isSkipMeta() && params.hasNonUidOutputIdScheme() )
         {
-            Map<String, String> map = DimensionalObjectUtils.getDimensionItemIdSchemeMap( params.getAllDimensionItems(), params.getOutputIdScheme() );
+            Map<String, String> map = DimensionalObjectUtils.getDimensionItemIdSchemeMap( params.getAllDimensionItems(),
+                params.getOutputIdScheme() );
 
             if ( params.isOutputFormat( OutputFormat.DATA_VALUE_SET ) && !params.getDataElementOperands().isEmpty() )
             {
-                map.putAll( DimensionalObjectUtils.getDataElementOperandIdSchemeMap( asTypedList( params.getDataElementOperands() ), params.getOutputIdScheme() ) );
+                map.putAll( DimensionalObjectUtils.getDataElementOperandIdSchemeMap(
+                    asTypedList( params.getDataElementOperands() ), params.getOutputIdScheme() ) );
             }
 
             grid.substituteMetaData( map );
@@ -1007,7 +1047,8 @@ public class DefaultAnalyticsService
 
         Map<String, Object> valueMap = AnalyticsUtils.getAggregatedDataValueMapping( grid );
 
-        return visualization.getGrid( new ListGrid( grid.getMetaData(), grid.getInternalMetaData() ), valueMap, params.getDisplayProperty(), false );
+        return visualization.getGrid( new ListGrid( grid.getMetaData(), grid.getInternalMetaData() ), valueMap,
+            params.getDisplayProperty(), false );
     }
 
     // -------------------------------------------------------------------------
@@ -1021,7 +1062,8 @@ public class DefaultAnalyticsService
      * @param grid the grid
      * @param aggregatedDataMap the aggregated data map
      */
-    private void fillGridWithAggregatedDataMap( DataQueryParams params, Grid grid, Map<String, Double> aggregatedDataMap)
+    private void fillGridWithAggregatedDataMap( DataQueryParams params, Grid grid,
+        Map<String, Double> aggregatedDataMap )
     {
         for ( Map.Entry<String, Double> entry : aggregatedDataMap.entrySet() )
         {
@@ -1039,15 +1081,16 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Generates a mapping of permutations keys (organisation unit id or null)
-     * and mappings of organisation unit group and counts.
+     * Generates a mapping of permutations keys (organisation unit id or null) and
+     * mappings of organisation unit group and counts.
      *
      * @param params the {@link DataQueryParams}.
      * @param indicators the indicators for which formulas to scan for organisation
-     *         unit groups.
+     *        unit groups.
      * @return a map of maps.
      */
-    private Map<String, Map<String, Integer>> getOrgUnitTargetMap( DataQueryParams params, Collection<Indicator> indicators )
+    private Map<String, Map<String, Integer>> getOrgUnitTargetMap( DataQueryParams params,
+        Collection<Indicator> indicators )
     {
         Set<OrganisationUnitGroup> orgUnitGroups = expressionService.getIndicatorOrgUnitGroups( indicators );
 
@@ -1071,22 +1114,23 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Generates aggregated values for the given query. Creates a mapping between
-     * a dimension key and the aggregated value. The dimension key is a
-     * concatenation of the identifiers of the dimension items separated by "-".
+     * Generates aggregated values for the given query. Creates a mapping between a
+     * dimension key and the aggregated value. The dimension key is a concatenation
+     * of the identifiers of the dimension items separated by "-".
      *
      * @param params the {@link DataQueryParams}.
      * @return a mapping between a dimension key and the aggregated value.
      */
     private Map<String, Double> getAggregatedDataValueMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.DATA_VALUE, Lists.newArrayList() ) );
+        return AnalyticsUtils
+            .getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.DATA_VALUE, Lists.newArrayList() ) );
     }
 
     /**
-     * Generates aggregated values for the given query. Creates a mapping between
-     * a dimension key and the aggregated value. The dimension key is a
-     * concatenation of the identifiers of the dimension items separated by "-".
+     * Generates aggregated values for the given query. Creates a mapping between a
+     * dimension key and the aggregated value. The dimension key is a concatenation
+     * of the identifiers of the dimension items separated by "-".
      *
      * @param params the {@link DataQueryParams}.
      * @return a mapping between a dimension key and the aggregated value.
@@ -1097,21 +1141,22 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Generates aggregated values for the given query. Creates a mapping between
-     * a dimension key and the aggregated value. The dimension key is a
-     * concatenation of the identifiers of the dimension items separated by "-".
+     * Generates aggregated values for the given query. Creates a mapping between a
+     * dimension key and the aggregated value. The dimension key is a concatenation
+     * of the identifiers of the dimension items separated by "-".
      *
      * @param params the {@link DataQueryParams}.
      * @return a mapping between a dimension key and the aggregated value.
      */
     private Map<String, Double> getAggregatedCompletenessValueMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.COMPLETENESS, Lists.newArrayList() ) );
+        return AnalyticsUtils
+            .getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.COMPLETENESS, Lists.newArrayList() ) );
     }
 
     /**
-     * Generates a mapping between the the data set dimension key and the count
-     * of expected data sets to report.
+     * Generates a mapping between the the data set dimension key and the count of
+     * expected data sets to report.
      *
      * @param params the {@link DataQueryParams}.
      * @return a mapping between the the data set dimension key and the count of
@@ -1122,13 +1167,14 @@ public class DefaultAnalyticsService
         List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers = Lists.newArrayList();
         queryGroupers.add( q -> queryPlanner.groupByStartEndDateRestriction( q ) );
 
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.COMPLETENESS_TARGET, queryGroupers ) );
+        return AnalyticsUtils
+            .getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.COMPLETENESS_TARGET, queryGroupers ) );
     }
 
     /**
      * Generates a mapping between the the organisation unit dimension key and the
-     * count of organisation units inside the subtree of the given organisation units and
-     * members of the given organisation unit groups.
+     * count of organisation units inside the subtree of the given organisation
+     * units and members of the given organisation unit groups.
      *
      * @param params the {@link DataQueryParams}.
      * @return a mapping between the the data set dimension key and the count of
@@ -1136,7 +1182,8 @@ public class DefaultAnalyticsService
      */
     private Map<String, Double> getAggregatedOrganisationUnitTargetMap( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.ORG_UNIT_TARGET, Lists.newArrayList() ) );
+        return AnalyticsUtils
+            .getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.ORG_UNIT_TARGET, Lists.newArrayList() ) );
     }
 
     /**
@@ -1147,7 +1194,8 @@ public class DefaultAnalyticsService
      */
     private Map<String, Double> getAggregatedValidationResultMapObjectTyped( DataQueryParams params )
     {
-        return AnalyticsUtils.getDoubleMap( getAggregatedValueMap( params, AnalyticsTableType.VALIDATION_RESULT, Lists.newArrayList() ) );
+        return AnalyticsUtils.getDoubleMap(
+            getAggregatedValueMap( params, AnalyticsTableType.VALIDATION_RESULT, Lists.newArrayList() ) );
     }
 
     /**
@@ -1157,16 +1205,18 @@ public class DefaultAnalyticsService
      *
      * @param params the {@link DataQueryParams}.
      * @param tableType the {@link AnalyticsTableType}.
-     * @param queryGroupers the list of additional query groupers to use for
-     *        query planning, use empty list for none.
+     * @param queryGroupers the list of additional query groupers to use for query
+     *        planning, use empty list for none.
      * @return a mapping between a dimension key and aggregated values.
      */
-    private Map<String, Object> getAggregatedValueMap( DataQueryParams params, AnalyticsTableType tableType, List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers )
+    private Map<String, Object> getAggregatedValueMap( DataQueryParams params, AnalyticsTableType tableType,
+        List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers )
     {
 
         int optimalQueries = MathUtils.getWithin( getProcessNo(), 1, MAX_QUERIES );
 
-        int maxLimit = params.isIgnoreLimit() ? 0 : (Integer) systemSettingManager.getSystemSetting( SettingKey.ANALYTICS_MAX_LIMIT );
+        int maxLimit = params.isIgnoreLimit() ? 0
+            : (Integer) systemSettingManager.getSystemSetting( SettingKey.ANALYTICS_MAX_LIMIT );
 
         Timer timer = new Timer().start().disablePrint();
 
@@ -1177,7 +1227,8 @@ public class DefaultAnalyticsService
 
         DataQueryGroups queryGroups = queryPlanner.planQuery( params, plannerParams );
 
-        timer.getSplitTime( "Planned analytics query, got: " + queryGroups.getLargestGroupSize() + " for optimal: " + optimalQueries );
+        timer.getSplitTime(
+            "Planned analytics query, got: " + queryGroups.getLargestGroupSize() + " for optimal: " + optimalQueries );
 
         Map<String, Object> map = new HashMap<>();
 
@@ -1208,7 +1259,8 @@ public class DefaultAnalyticsService
 
                     if ( ex.getCause() != null && ex.getCause() instanceof RuntimeException )
                     {
-                        throw (RuntimeException) ex.getCause(); // Throw the real exception instead of execution exception
+                        throw (RuntimeException) ex.getCause(); // Throw the real exception instead of execution
+                                                                // exception
                     }
                     else
                     {
@@ -1295,7 +1347,8 @@ public class DefaultAnalyticsService
      *
      * @param params the {@link DataQueryParams}.
      */
-    private Map<String, Map<DimensionalItemObject, Double>> getPermutationDimensionItemValueMap( DataQueryParams params )
+    private Map<String, Map<DimensionalItemObject, Double>> getPermutationDimensionItemValueMap(
+        DataQueryParams params )
     {
         List<Indicator> indicators = asTypedList( params.getIndicators() );
 
@@ -1305,11 +1358,11 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Returns a mapping between dimension items and values for the given data
-     * query and list of indicators. The dimensional items part of the indicator
+     * Returns a mapping between dimension items and values for the given data query
+     * and list of indicators. The dimensional items part of the indicator
      * numerators and denominators are used as dimensional item for the aggregated
-     * values being retrieved.
-     * In case of circular references between Indicators, an exception is thrown.
+     * values being retrieved. In case of circular references between Indicators, an
+     * exception is thrown.
      *
      * @param params the {@link DataQueryParams}.
      * @param indicators the list of indicators.
@@ -1318,26 +1371,32 @@ public class DefaultAnalyticsService
     private Map<String, Double> getAggregatedDataValueMap( DataQueryParams params, List<Indicator> indicators )
     {
         List<DimensionalItemObject> items = Lists
-                .newArrayList( expressionService.getIndicatorDimensionalItemObjects( resolveIndicatorExpressions( indicators ) ) );
+            .newArrayList(
+                expressionService.getIndicatorDimensionalItemObjects( resolveIndicatorExpressions( indicators ) ) );
 
         // TODO Luciano - remove this loop
-        for (DimensionalItemObject item : items) {
-            try {
-                if (item instanceof DataElementOperand) {
+        for ( DimensionalItemObject item : items )
+        {
+            try
+            {
+                if ( item instanceof DataElementOperand )
+                {
 
-                    DataElementOperand dataElementOperand = (DataElementOperand)item;
+                    DataElementOperand dataElementOperand = (DataElementOperand) item;
                     DataElement dataElement = dataElementOperand.getDataElement();
-                    if (dataElement != null) {
+                    if ( dataElement != null )
+                    {
 
-                        FieldUtils.writeField(dataElement, "periodOffset", 1, true);
+                        FieldUtils.writeField( dataElement, "periodOffset", 1, true );
                     }
                 }
-                FieldUtils.writeField(item, "periodOffset", 1, true);
-            } catch (IllegalAccessException e) {
+                FieldUtils.writeField( item, "periodOffset", 1, true );
+            }
+            catch ( IllegalAccessException e )
+            {
                 e.printStackTrace();
             }
         }
-
 
         if ( items.isEmpty() )
         {
@@ -1346,7 +1405,8 @@ public class DefaultAnalyticsService
 
         items = DimensionalObjectUtils.replaceOperandTotalsWithDataElements( items );
 
-        DimensionalObject dimension = new BaseDimensionalObject( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X, null, DISPLAY_NAME_DATA_X, items );
+        DimensionalObject dimension = new BaseDimensionalObject( DimensionalObject.DATA_X_DIM_ID, DimensionType.DATA_X,
+            null, DISPLAY_NAME_DATA_X, items );
 
         DataQueryParams dataSourceParams = DataQueryParams
             .newBuilder( params )
@@ -1395,9 +1455,8 @@ public class DefaultAnalyticsService
     }
 
     /**
-     * Gets the number of available cores. Uses explicit number from system
-     * setting if available. Detects number of cores from current server runtime
-     * if not.
+     * Gets the number of available cores. Uses explicit number from system setting
+     * if available. Detects number of cores from current server runtime if not.
      *
      * @return the number of available cores.
      */
