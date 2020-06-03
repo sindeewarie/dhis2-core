@@ -29,36 +29,9 @@ package org.hisp.dhis.analytics.data;
  */
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.hisp.dhis.analytics.DataQueryParams.Builder;
-import static org.hisp.dhis.analytics.DataQueryParams.COMPLETENESS_DIMENSION_TYPES;
-import static org.hisp.dhis.analytics.DataQueryParams.DENOMINATOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.DENOMINATOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.DISPLAY_NAME_DATA_X;
-import static org.hisp.dhis.analytics.DataQueryParams.DIVISOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.DIVISOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.DX_INDEX;
-import static org.hisp.dhis.analytics.DataQueryParams.FACTOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.FACTOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.MULTIPLIER_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.MULTIPLIER_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.NUMERATOR_DENOMINATOR_PROPERTIES_COUNT;
-import static org.hisp.dhis.analytics.DataQueryParams.NUMERATOR_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.NUMERATOR_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.PERIOD_END_DATE_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.PERIOD_END_DATE_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.PERIOD_START_DATE_ID;
-import static org.hisp.dhis.analytics.DataQueryParams.PERIOD_START_DATE_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.VALUE_HEADER_NAME;
-import static org.hisp.dhis.analytics.DataQueryParams.VALUE_ID;
-import static org.hisp.dhis.common.DataDimensionItemType.PROGRAM_ATTRIBUTE;
-import static org.hisp.dhis.common.DataDimensionItemType.PROGRAM_DATA_ELEMENT;
-import static org.hisp.dhis.common.DataDimensionItemType.PROGRAM_INDICATOR;
-import static org.hisp.dhis.common.DimensionalObject.ATTRIBUTEOPTIONCOMBO_DIM_ID;
-import static org.hisp.dhis.common.DimensionalObject.CATEGORYOPTIONCOMBO_DIM_ID;
-import static org.hisp.dhis.common.DimensionalObject.DATA_X_DIM_ID;
-import static org.hisp.dhis.common.DimensionalObject.DIMENSION_SEP;
-import static org.hisp.dhis.common.DimensionalObject.ORGUNIT_DIM_ID;
-import static org.hisp.dhis.common.DimensionalObject.PERIOD_DIM_ID;
+import static org.hisp.dhis.analytics.DataQueryParams.*;
+import static org.hisp.dhis.common.DataDimensionItemType.*;
+import static org.hisp.dhis.common.DimensionalObject.*;
 import static org.hisp.dhis.common.DimensionalObjectUtils.asTypedList;
 import static org.hisp.dhis.common.DimensionalObjectUtils.getDimensionalItemIds;
 import static org.hisp.dhis.common.IdentifiableObjectUtils.getLocalPeriodIdentifiers;
@@ -81,6 +54,7 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hisp.dhis.analytics.AnalyticsAggregationType;
 import org.hisp.dhis.analytics.AnalyticsManager;
 import org.hisp.dhis.analytics.AnalyticsMetaDataKey;
@@ -123,6 +97,7 @@ import org.hisp.dhis.commons.util.DebugUtils;
 import org.hisp.dhis.commons.util.SystemUtils;
 import org.hisp.dhis.constant.Constant;
 import org.hisp.dhis.constant.ConstantService;
+import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementOperand;
 import org.hisp.dhis.dxf2.datavalueset.DataValueSet;
 import org.hisp.dhis.expression.ExpressionService;
@@ -141,7 +116,6 @@ import org.hisp.dhis.system.util.MathUtils;
 import org.hisp.dhis.util.ObjectUtils;
 import org.hisp.dhis.util.Timer;
 import org.hisp.dhis.visualization.Visualization;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -245,11 +219,11 @@ public class DefaultAnalyticsService
 
         queryValidator.validate( params );
 
-        if ( analyticsCache.isEnabled() )
-        {
-            final DataQueryParams immutableParams = DataQueryParams.newBuilder( params ).build();
-            return analyticsCache.getOrFetch( params, p -> getAggregatedDataValueGridInternal( immutableParams ) );
-        }
+//        if ( analyticsCache.isEnabled() )
+//        {
+//            final DataQueryParams immutableParams = DataQueryParams.newBuilder( params ).build();
+//            return analyticsCache.getOrFetch( params, p -> getAggregatedDataValueGridInternal( immutableParams ) );
+//        }
 
         return getAggregatedDataValueGridInternal( params );
     }
@@ -570,7 +544,7 @@ public class DefaultAnalyticsService
      * @param params the {@link DataQueryParams}.
      * @param grid the grid.
      */
-    private void addDataElementValues( DataQueryParams params, Grid grid )
+    private void  addDataElementValues( DataQueryParams params, Grid grid )
     {
         if ( !params.getAllDataElements().isEmpty() && !params.isSkipData() )
         {
@@ -624,10 +598,11 @@ public class DefaultAnalyticsService
      * @param grid the grid.
      * @param totalType the operand {@link DataElementOperand.TotalType}.
      */
-    private void addDataElementOperandValues( DataQueryParams params, Grid grid, DataElementOperand.TotalType totalType )
+    private void  addDataElementOperandValues( DataQueryParams params, Grid grid, DataElementOperand.TotalType totalType )
     {
         List<DataElementOperand> operands = asTypedList( params.getDataElementOperands() );
         operands = operands.stream().filter( o -> totalType.equals( o.getTotalType() ) ).collect( Collectors.toList() );
+
 
         if ( operands.isEmpty() )
         {
@@ -1188,7 +1163,6 @@ public class DefaultAnalyticsService
      */
     private Map<String, Object> getAggregatedValueMap( DataQueryParams params, AnalyticsTableType tableType, List<Function<DataQueryParams, List<DataQueryParams>>> queryGroupers )
     {
-        queryValidator.validateMaintenanceMode();
 
         int optimalQueries = MathUtils.getWithin( getProcessNo(), 1, MAX_QUERIES );
 
@@ -1345,6 +1319,25 @@ public class DefaultAnalyticsService
     {
         List<DimensionalItemObject> items = Lists
                 .newArrayList( expressionService.getIndicatorDimensionalItemObjects( resolveIndicatorExpressions( indicators ) ) );
+
+        // TODO Luciano - remove this loop
+        for (DimensionalItemObject item : items) {
+            try {
+                if (item instanceof DataElementOperand) {
+
+                    DataElementOperand dataElementOperand = (DataElementOperand)item;
+                    DataElement dataElement = dataElementOperand.getDataElement();
+                    if (dataElement != null) {
+
+                        FieldUtils.writeField(dataElement, "periodOffset", 1, true);
+                    }
+                }
+                FieldUtils.writeField(item, "periodOffset", 1, true);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
 
         if ( items.isEmpty() )
         {

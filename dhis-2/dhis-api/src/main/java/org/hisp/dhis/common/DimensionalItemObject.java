@@ -91,4 +91,6 @@ public interface DimensionalItemObject
      * should be aggregated across multiple values.
      */
     TotalAggregationType getTotalAggregationType();
+
+    int getPeriodOffset();
 }

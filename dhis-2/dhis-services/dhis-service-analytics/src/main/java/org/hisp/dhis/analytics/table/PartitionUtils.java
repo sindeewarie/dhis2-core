@@ -28,6 +28,8 @@ package org.hisp.dhis.analytics.table;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import static org.hisp.dhis.common.DimensionalObject.DATA_X_DIM_ID;
+
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -41,6 +43,7 @@ import org.hisp.dhis.analytics.DataQueryParams;
 import org.hisp.dhis.analytics.Partitions;
 import org.hisp.dhis.calendar.Calendar;
 import org.hisp.dhis.common.DimensionalItemObject;
+import org.hisp.dhis.common.DimensionalObject;
 import org.hisp.dhis.common.ListMap;
 import org.hisp.dhis.period.Period;
 import org.hisp.dhis.period.PeriodType;
@@ -99,7 +102,7 @@ public class PartitionUtils
     /**
      * Returns partitions for the given list of periods.
      *
-     * @param period the period.
+     * @param periods a List of periods.
      * @return partitions for the given list of periods.
      */
     public static Partitions getPartitions( List<DimensionalItemObject> periods )
@@ -203,6 +206,75 @@ public class PartitionUtils
         return map;
     }
 
+    public static ListMap<String, DimensionalItemObject> getPeriodTypePeriodMap( DataQueryParams params )
+    {
+        ListMap<String, DimensionalItemObject> periodTypePeriodMap = getPeriodTypePeriodMap( params.getPeriods() );
+
+        DimensionalObject dimension = params.getDimension( DATA_X_DIM_ID );
+        if ( dimension == null )
+        {
+            return periodTypePeriodMap;
+        }
+        List<DimensionalItemObject> items = dimension.getItems();
+        ListMap<String, DimensionalItemObject> shiftedMap = new ListMap<>();
+        
+        for ( DimensionalItemObject item : items )
+        {
+            if ( item.getPeriodOffset() != 0 )
+            {
+                shiftedMap.putAll( addPeriodOffset( periodTypePeriodMap, item.getPeriodOffset() ) );
+            }
+        }
+
+        Set<DimensionalItemObject> dimensionalItemObjects = shiftedMap.uniqueValues();
+        for ( DimensionalItemObject dimensionalItemObject : dimensionalItemObjects )
+        {
+            Period period = (Period) dimensionalItemObject;
+            if ( !periodTypePeriodMap.containsValue( period.getPeriodType().getName(), dimensionalItemObject ) )
+            {
+                periodTypePeriodMap.putValue( period.getPeriodType().getName(), dimensionalItemObject );
+            }
+        }
+        
+        return periodTypePeriodMap;
+    }
+
+    private static ListMap<String, DimensionalItemObject> addPeriodOffset( ListMap<String, DimensionalItemObject> map,
+        int periodOffset )
+    {
+
+        ListMap<String, DimensionalItemObject> periodTypeOffsetMap = new ListMap<>();
+        Collection<DimensionalItemObject> dimensionalItemObjects = map.allValues();
+        for ( DimensionalItemObject dimensionalItemObject : dimensionalItemObjects )
+        {
+            Period currentPeriod = (Period) dimensionalItemObject;
+            System.out.println(":: " + currentPeriod.getIsoDate());
+            Period shifted = shiftPeriod( currentPeriod, periodOffset );
+
+            if ( !map.containsValue( currentPeriod.getPeriodType().getName(), shifted ) )
+            {
+                System.out.println(":: adding " + shifted.getIsoDate());
+                periodTypeOffsetMap.putValue( currentPeriod.getPeriodType().getName(), shifted );
+            }
+        }
+
+        return periodTypeOffsetMap;
+    }
+
+    private static Period shiftPeriod( Period period, int periodOffset )
+    {
+        PeriodType periodType = period.getPeriodType();
+        if ( periodOffset > 0 )
+        {
+            return periodType.getNextPeriod( period, periodOffset );
+        }
+        else
+        {
+            return periodType.getPreviousPeriod( period, periodOffset );
+        }
+    }
+
+
     /**
      * Returns a list of table partitions based on the given analytics tables. For
      * master tables with no partitions, a fake partition representing the master
@@ -251,7 +323,7 @@ public class PartitionUtils
      * Returns partition name. Aggregate only for now!
      *
      * @param tableName the table name.
-     * @param partitiont the partition.
+     * @param partition the partition.
      * @return the partition name.
      */
     public static String getPartitionName( String tableName, Integer partition )
