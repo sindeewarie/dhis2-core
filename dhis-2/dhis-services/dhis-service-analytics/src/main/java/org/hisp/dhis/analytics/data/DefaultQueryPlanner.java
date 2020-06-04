@@ -38,6 +38,7 @@ import static org.hisp.dhis.analytics.util.AnalyticsUtils.throwIllegalQueryEx;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.hisp.dhis.analytics.AggregationType;
 import org.hisp.dhis.analytics.AnalyticsAggregationType;
@@ -53,6 +54,7 @@ import org.hisp.dhis.analytics.partition.PartitionManager;
 import org.hisp.dhis.analytics.table.PartitionUtils;
 import org.hisp.dhis.common.BaseDimensionalObject;
 import org.hisp.dhis.common.DataDimensionItemType;
+import org.hisp.dhis.common.DimensionItemType;
 import org.hisp.dhis.common.DimensionType;
 import org.hisp.dhis.common.DimensionalItemObject;
 import org.hisp.dhis.common.DimensionalObject;
@@ -270,7 +272,7 @@ public class DefaultQueryPlanner
                     .addOrSetDimensionOptions( PERIOD_DIM_ID, DimensionType.PERIOD, periodType.toLowerCase(), periodTypePeriodMap.get( periodType ) )
                     .withPeriodType( periodType ).build();
 
-                queries.add( query );
+                queries.add( removeOffsetPeriodsIfNotNeeded (query) );
             }
         }
         else if ( !params.getFilterPeriods().isEmpty() )
@@ -300,6 +302,29 @@ public class DefaultQueryPlanner
         logQuerySplit( queries, "period type" );
 
         return queries;
+    }
+
+    private DataQueryParams removeOffsetPeriodsIfNotNeeded( DataQueryParams params )
+    {
+        final List<DimensionalItemObject> items = params.getDataElements();
+
+        final boolean hasOffset = items.stream().filter( dio -> dio.getDimensionItemType() != null )
+                .filter( dio -> dio.getDimensionItemType().equals( DimensionItemType.DATA_ELEMENT ) )
+                .anyMatch( dio -> dio.getPeriodOffset() != 0 );
+
+        if ( !hasOffset )
+        {
+            List<DimensionalItemObject> nonShiftedPeriods = params.getPeriods().stream()
+                    .filter( dio -> (!((Period) dio).isShifted()) ).collect( Collectors.toList() );
+
+            // TODO is there a better way to "replace" periods?
+            final DimensionalObject periodDimension = params.getDimension("pe");
+            periodDimension.getItems().clear();
+            periodDimension.getItems().addAll( nonShiftedPeriods );
+
+            return DataQueryParams.newBuilder( params ).removeDimension( "pe").addDimension( periodDimension ).build();
+        }
+        return params;
     }
 
     @Override
