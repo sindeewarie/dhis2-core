@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hisp.dhis.category.CategoryOptionCombo;
 import org.hisp.dhis.common.comparator.ObjectStringValueComparator;
 import org.hisp.dhis.dataelement.DataElement;
 import org.hisp.dhis.dataelement.DataElementOperand;
@@ -503,7 +504,15 @@ public class DimensionalObjectUtils
      */
     public static Set<DimensionalItemObject> getDataElements( Collection<DataElementOperand> operands )
     {
-        return operands.stream().map( DataElementOperand::getDataElement ).collect( Collectors.toSet() );
+        return operands.stream().map( o -> {
+
+            // TODO enrico: this is not needed if the parser returns the Operand inner
+            // elements with the offset already populated
+            DataElement dataElement = o.getDataElement();
+            dataElement.setPeriodOffset( o.getPeriodOffset() );
+            return dataElement;
+
+        } ).collect( Collectors.toSet() );
     }
 
     /**
@@ -517,7 +526,14 @@ public class DimensionalObjectUtils
     {
         return operands.stream()
             .filter( o -> o.getCategoryOptionCombo() != null )
-            .map( DataElementOperand::getCategoryOptionCombo )
+            .map( o -> {
+                // TODO enrico: this is not needed if the parser returns the Operand inner
+                // elements with the offset already populated
+                CategoryOptionCombo coc = o.getCategoryOptionCombo();
+                coc.setPeriodOffset( o.getPeriodOffset() );
+                return coc;
+                
+            } )
             .collect( Collectors.toSet() );
     }
 
@@ -532,7 +548,14 @@ public class DimensionalObjectUtils
     {
         return operands.stream()
             .filter( o -> o.getAttributeOptionCombo() != null )
-            .map( DataElementOperand::getAttributeOptionCombo )
+            .map( o -> {
+                // TODO enrico: this is not needed if the parser returns the Operand inner
+                // elements with the offset already populated
+                CategoryOptionCombo aoc = o.getAttributeOptionCombo();
+                aoc.setPeriodOffset( o.getPeriodOffset() );
+                return aoc;
+
+            } )
             .collect( Collectors.toSet() );
     }
 
