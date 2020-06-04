@@ -68,6 +68,11 @@ public class DimensionalItemId
      */
     private String id2;
 
+    /**
+     * The period offset
+     */
+    private Integer periodOffset = 0;
+
     // -------------------------------------------------------------------------
     // Constructors
     // -------------------------------------------------------------------------
@@ -76,6 +81,13 @@ public class DimensionalItemId
     {
         this.dimensionItemType = dimensionItemType;
         this.id0 = id0;
+    }
+
+    public DimensionalItemId( DimensionItemType dimensionItemType, String id0, Integer periodOffset )
+    {
+        this.dimensionItemType = dimensionItemType;
+        this.id0 = id0;
+        this.periodOffset = periodOffset;
     }
 
     public DimensionalItemId( DimensionItemType dimensionItemType, String id0, String id1 )
@@ -173,6 +185,7 @@ public class DimensionalItemId
             .add( "id0", id0 )
             .add( "id1", id1 )
             .add( "id2", id2 )
+            .add( "periodOffset", periodOffset )
             .toString();
     }
 
@@ -198,5 +211,10 @@ public class DimensionalItemId
     public String getId2()
     {
         return id2;
+    }
+
+    public Integer getPeriodOffset()
+    {
+        return periodOffset;
     }
 }
