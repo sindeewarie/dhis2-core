@@ -206,6 +206,15 @@ public class PartitionUtils
         return map;
     }
 
+    /**
+     * Creates a map where the key is the "period type" and the value is a list of
+     * Periods. Each map value may also contain periods that are derived from Period
+     * offsets applied to elements from the "data" dimension of the
+     * {@see DataQueryParams}
+     * 
+     * 
+     * @param params a DataQueryParams object
+     */
     public static ListMap<String, DimensionalItemObject> getPeriodTypePeriodMap( DataQueryParams params )
     {
         ListMap<String, DimensionalItemObject> periodTypePeriodMap = getPeriodTypePeriodMap( params.getPeriods() );
@@ -242,7 +251,6 @@ public class PartitionUtils
     private static ListMap<String, DimensionalItemObject> addPeriodOffset( ListMap<String, DimensionalItemObject> map,
         int periodOffset )
     {
-
         ListMap<String, DimensionalItemObject> periodTypeOffsetMap = new ListMap<>();
         Collection<DimensionalItemObject> dimensionalItemObjects = map.allValues();
         for ( DimensionalItemObject dimensionalItemObject : dimensionalItemObjects )
@@ -253,25 +261,28 @@ public class PartitionUtils
 
             if ( !map.containsValue( currentPeriod.getPeriodType().getName(), shifted ) )
             {
-                System.out.println(":: adding " + shifted.getIsoDate());
                 periodTypeOffsetMap.putValue( currentPeriod.getPeriodType().getName(), shifted );
             }
         }
 
         return periodTypeOffsetMap;
     }
-
+    
     private static Period shiftPeriod( Period period, int periodOffset )
     {
         PeriodType periodType = period.getPeriodType();
+        Period p;
         if ( periodOffset > 0 )
         {
-            return periodType.getNextPeriod( period, periodOffset );
+            p = periodType.getNextPeriod( period, periodOffset );
         }
         else
         {
-            return periodType.getPreviousPeriod( period, periodOffset );
+            p = periodType.getPreviousPeriod( period, periodOffset );
         }
+
+        p.setShifted( true );
+        return p;
     }
 
 
