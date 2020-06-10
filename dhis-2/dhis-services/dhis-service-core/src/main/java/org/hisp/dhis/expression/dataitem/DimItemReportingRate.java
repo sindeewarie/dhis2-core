@@ -28,10 +28,11 @@ package org.hisp.dhis.expression.dataitem;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hisp.dhis.common.DimensionalItemId;
-
 import static org.hisp.dhis.common.DimensionItemType.REPORTING_RATE;
 import static org.hisp.dhis.parser.expression.antlr.ExpressionParser.ExprContext;
+
+import org.hisp.dhis.common.DimensionalItemId;
+import org.hisp.dhis.parser.expression.CommonExpressionVisitor;
 
 /**
  * Expression item ReportingRate
@@ -42,7 +43,8 @@ public class DimItemReportingRate
     extends DimensionalItem
 {
     @Override
-    public DimensionalItemId getDimensionalItemId( ExprContext ctx )
+    public DimensionalItemId getDimensionalItemId( ExprContext ctx,
+        CommonExpressionVisitor visitor )
     {
         return new DimensionalItemId( REPORTING_RATE,
             ctx.uid0.getText(),

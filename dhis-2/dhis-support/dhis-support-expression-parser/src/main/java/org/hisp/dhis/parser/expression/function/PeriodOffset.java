@@ -1,4 +1,4 @@
-package org.hisp.dhis.expression.dataitem;
+package org.hisp.dhis.parser.expression.function;
 
 /*
  * Copyright (c) 2004-2020, University of Oslo
@@ -28,31 +28,23 @@ package org.hisp.dhis.expression.dataitem;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.hisp.dhis.common.DimensionItemType.PROGRAM_INDICATOR;
 import static org.hisp.dhis.parser.expression.antlr.ExpressionParser.ExprContext;
 
-import org.hisp.dhis.common.DimensionalItemId;
 import org.hisp.dhis.parser.expression.CommonExpressionVisitor;
 
 /**
- * Expression item ProgramIndicator
+ * Function least
  *
- * @author Jim Grace
+ * @author Enrico Colasante
  */
-public class DimItemProgramIndicator
-    extends DimensionalItem
+public class PeriodOffset
+    extends FunctionGreatestOrLeast
 {
     @Override
-    public DimensionalItemId getDimensionalItemId( ExprContext ctx,
-        CommonExpressionVisitor visitor )
+    public Object evaluate( ExprContext ctx, CommonExpressionVisitor visitor )
     {
-        return new DimensionalItemId( PROGRAM_INDICATOR,
-            ctx.uid0.getText() );
-    }
+        int offset = ctx.period != null ? Double.valueOf( ctx.period.getText() ).intValue() : 0;
 
-    @Override
-    public String getId( ExprContext ctx )
-    {
-        return ctx.uid0.getText();
+        return visitor.visitWithOffset( ctx.expr( 0 ), offset );
     }
 }

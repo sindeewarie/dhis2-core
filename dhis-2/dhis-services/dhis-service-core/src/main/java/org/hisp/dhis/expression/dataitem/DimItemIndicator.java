@@ -32,6 +32,7 @@ import static org.hisp.dhis.common.DimensionItemType.INDICATOR;
 import static org.hisp.dhis.parser.expression.antlr.ExpressionParser.ExprContext;
 
 import org.hisp.dhis.common.DimensionalItemId;
+import org.hisp.dhis.parser.expression.CommonExpressionVisitor;
 
 /**
  * Expression item Indicator
@@ -42,9 +43,10 @@ public class DimItemIndicator
     extends DimensionalItem
 {
     @Override
-    public DimensionalItemId getDimensionalItemId( ExprContext ctx )
+    public DimensionalItemId getDimensionalItemId( ExprContext ctx,
+        CommonExpressionVisitor visitor )
     {
-        return new DimensionalItemId( INDICATOR, ctx.uid0.getText() );
+        return new DimensionalItemId( INDICATOR, ctx.uid0.getText(), visitor.getPeriodOffset() );
     }
 
     @Override
