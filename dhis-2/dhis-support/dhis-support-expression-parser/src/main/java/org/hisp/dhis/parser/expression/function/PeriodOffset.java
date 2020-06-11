@@ -43,7 +43,7 @@ public class PeriodOffset
     @Override
     public Object evaluate( ExprContext ctx, CommonExpressionVisitor visitor )
     {
-        int offset = ctx.period != null ? Double.valueOf( ctx.period.getText() ).intValue() : 0;
+        int offset = ctx.period != null ? Integer.valueOf( ctx.period.getText() ) : 0;
 
         return visitor.visitWithOffset( ctx.expr( 0 ), offset );
     }
