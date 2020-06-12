@@ -55,7 +55,7 @@ public class DimItemProgramAttribute
     }
 
     @Override
-    public String getId( ExprContext ctx )
+    public String getId( ExprContext ctx, CommonExpressionVisitor visitor )
     {
         assumeExpressionProgramAttribute( ctx );
 

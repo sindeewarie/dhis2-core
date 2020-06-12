@@ -80,7 +80,7 @@ public abstract class DimensionalItem
     @Override
     public final Object evaluate( ExprContext ctx, CommonExpressionVisitor visitor )
     {
-        Double value = visitor.getItemValueMap().get( getId( ctx ) );
+        Double value = visitor.getItemValueMap().get( getId( ctx, visitor ) );
 
         return visitor.handleNulls( value );
     }
@@ -103,5 +103,5 @@ public abstract class DimensionalItem
      * @param ctx the parser item context
      * @return the id for this item
      */
-    public abstract String getId( ExprContext ctx );
+    public abstract String getId( ExprContext ctx, CommonExpressionVisitor visitor );
 }

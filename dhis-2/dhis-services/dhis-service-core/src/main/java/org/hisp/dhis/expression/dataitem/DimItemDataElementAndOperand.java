@@ -54,17 +54,18 @@ public class DimItemDataElementAndOperand
             return new DimensionalItemId( DATA_ELEMENT_OPERAND,
                 ctx.uid0.getText(),
                 ctx.uid1 == null ? null : ctx.uid1.getText(),
-                ctx.uid2 == null ? null : ctx.uid2.getText() );
+                ctx.uid2 == null ? null : ctx.uid2.getText(),
+                visitor.getPeriodOffset() );
         }
         else
         {
             return new DimensionalItemId( DATA_ELEMENT,
-                ctx.uid0.getText() );
+                ctx.uid0.getText(), visitor.getPeriodOffset() );
         }
     }
 
     @Override
-    public String getId( ExprContext ctx )
+    public String getId( ExprContext ctx, CommonExpressionVisitor visitor )
     {
         if ( isDataElementOperandSyntax( ctx ) )
         {
@@ -74,7 +75,7 @@ public class DimItemDataElementAndOperand
         }
         else // Data element:
         {
-            return ctx.uid0.getText();
+            return ctx.uid0.getText() + "." + visitor.getPeriodOffset();
         }
     }
 

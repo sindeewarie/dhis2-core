@@ -28,13 +28,13 @@ package org.hisp.dhis.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.google.common.base.MoreObjects;
-
-import java.util.Objects;
-
 import static org.apache.commons.lang3.EnumUtils.isValidEnum;
 import static org.hisp.dhis.common.DimensionItemType.DATA_ELEMENT;
 import static org.hisp.dhis.common.DimensionItemType.DATA_ELEMENT_OPERAND;
+
+import java.util.Objects;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * Holds the DimensionItemType of a DimensionalItemObject, and the identifier
@@ -105,6 +105,16 @@ public class DimensionalItemId
         this.id2 = id2;
     }
 
+    public DimensionalItemId( DimensionItemType dimensionItemType, String id0, String id1, String id2,
+        int periodOffset )
+    {
+        this.dimensionItemType = dimensionItemType;
+        this.id0 = id0;
+        this.id1 = id1;
+        this.id2 = id2;
+        this.periodOffset = periodOffset;
+    }
+
     // -------------------------------------------------------------------------
     // Logic
     // -------------------------------------------------------------------------
@@ -113,24 +123,24 @@ public class DimensionalItemId
     {
         switch ( dimensionItemType )
         {
-            case DATA_ELEMENT:
-            case INDICATOR:
-            case PROGRAM_INDICATOR:
-                return id0 != null && id1 == null && id2 == null;
+        case DATA_ELEMENT:
+        case INDICATOR:
+        case PROGRAM_INDICATOR:
+            return id0 != null && id1 == null && id2 == null;
 
-            case DATA_ELEMENT_OPERAND:
-                return id0 != null && ( id1 != null || id2 != null );
+        case DATA_ELEMENT_OPERAND:
+            return id0 != null && (id1 != null || id2 != null);
 
-            case REPORTING_RATE:
-                return id0 != null && id1 != null && id2 == null
-                    && isValidEnum( ReportingRateMetric.class, id1 );
+        case REPORTING_RATE:
+            return id0 != null && id1 != null && id2 == null
+                && isValidEnum( ReportingRateMetric.class, id1 );
 
-            case PROGRAM_DATA_ELEMENT:
-            case PROGRAM_ATTRIBUTE:
-                return id0 != null && id1 != null && id2 == null;
+        case PROGRAM_DATA_ELEMENT:
+        case PROGRAM_ATTRIBUTE:
+            return id0 != null && id1 != null && id2 == null;
 
-            default:
-                return false;
+        default:
+            return false;
         }
     }
 
@@ -170,9 +180,9 @@ public class DimensionalItemId
     {
         int result = dimensionItemType.hashCode();
 
-        result = 31 * result + ( id0 == null ? 0 : id0.hashCode() );
-        result = 31 * result + ( id1 == null ? 0 : id1.hashCode() );
-        result = 31 * result + ( id2 == null ? 0 : id2.hashCode() );
+        result = 31 * result + (id0 == null ? 0 : id0.hashCode());
+        result = 31 * result + (id1 == null ? 0 : id1.hashCode());
+        result = 31 * result + (id2 == null ? 0 : id2.hashCode());
 
         return result;
     }

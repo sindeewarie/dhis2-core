@@ -50,7 +50,7 @@ public class DimItemIndicator
     }
 
     @Override
-    public String getId( ExprContext ctx )
+    public String getId( ExprContext ctx, CommonExpressionVisitor visitor )
     {
         return ctx.uid0.getText();
     }

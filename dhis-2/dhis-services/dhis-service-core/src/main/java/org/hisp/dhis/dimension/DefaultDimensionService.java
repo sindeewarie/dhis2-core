@@ -528,6 +528,7 @@ public class DefaultDimensionService
             {
                 case DATA_ELEMENT:
                     DataElement dataElement = (DataElement) atomicObjects.getValue( DataElement.class, id.getId0() );
+                dataElement.setPeriodOffset( id.getPeriodOffset() );
                     if ( dataElement != null )
                     {
                         itemObjectMap.put( id, dataElement );
