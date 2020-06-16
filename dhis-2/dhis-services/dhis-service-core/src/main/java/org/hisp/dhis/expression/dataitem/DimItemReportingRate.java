@@ -55,6 +55,7 @@ public class DimItemReportingRate
     public String getId( ExprContext ctx, CommonExpressionVisitor visitor )
     {
         return ctx.uid0.getText() + "." +
-            ctx.REPORTING_RATE_TYPE().getText();
+            ctx.REPORTING_RATE_TYPE().getText() +
+            (visitor.getPeriodOffset() == 0 ? "" : "." + visitor.getPeriodOffset());
     }
 }

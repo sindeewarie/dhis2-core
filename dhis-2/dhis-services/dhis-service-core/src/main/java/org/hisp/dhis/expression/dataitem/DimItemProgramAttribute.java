@@ -60,6 +60,7 @@ public class DimItemProgramAttribute
         assumeExpressionProgramAttribute( ctx );
 
         return ctx.uid0.getText() + "." +
-            ctx.uid1.getText();
+            ctx.uid1.getText() +
+            (visitor.getPeriodOffset() == 0 ? "" : "." + visitor.getPeriodOffset());
     }
 }

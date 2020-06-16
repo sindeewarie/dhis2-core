@@ -529,7 +529,9 @@ public class DefaultExpressionService
             samplePeriods, constantMap, missingValueStrategy );
 
         Map<String, Double> itemValueMap = valueMap.entrySet().stream().collect(
-            Collectors.toMap( e -> e.getKey().getDimensionItem() + "." + e.getKey().getPeriodOffset(),
+            Collectors.toMap(
+                e -> e.getKey().getDimensionItem()
+                    + (e.getKey().getPeriodOffset() == 0 ? "" : "." + e.getKey().getPeriodOffset()),
                 Map.Entry::getValue ) );
 
         MapMap<Period, String, Double> periodItemValueMap = new MapMap<>();

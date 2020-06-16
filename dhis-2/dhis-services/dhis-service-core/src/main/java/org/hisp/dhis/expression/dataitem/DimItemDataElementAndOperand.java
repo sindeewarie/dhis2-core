@@ -71,11 +71,12 @@ public class DimItemDataElementAndOperand
         {
             return ctx.uid0.getText() + "." +
                 (ctx.uid1 == null ? "*" : ctx.uid1.getText()) +
-                (ctx.uid2 == null ? "" : "." + ctx.uid2.getText());
+                (ctx.uid2 == null ? "" : "." + ctx.uid2.getText()) +
+                (visitor.getPeriodOffset() == 0 ? "" : "." + visitor.getPeriodOffset());
         }
         else // Data element:
         {
-            return ctx.uid0.getText() + "." + visitor.getPeriodOffset();
+            return ctx.uid0.getText() + (visitor.getPeriodOffset() == 0 ? "" : "." + visitor.getPeriodOffset());
         }
     }
 

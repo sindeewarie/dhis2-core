@@ -53,6 +53,7 @@ public class DimItemProgramIndicator
     @Override
     public String getId( ExprContext ctx, CommonExpressionVisitor visitor )
     {
-        return ctx.uid0.getText();
+        return ctx.uid0.getText() +
+            (visitor.getPeriodOffset() == 0 ? "" : "." + visitor.getPeriodOffset());
     }
 }
